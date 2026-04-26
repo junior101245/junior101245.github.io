@@ -1,10 +1,125 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My First Website</title>
+  <title>Flappy Bird Clone</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: skyblue;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
 </head>
 <body>
-  <h1>Hello!</h1>
-  <p>This is my site 🚀</p>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let bird = {
+  x: 100,
+  y: 200,
+  size: 20,
+  gravity: 0.6,
+  lift: -10,
+  velocity: 0
+};
+
+let pipes = [];
+let frame = 0;
+let score = 0;
+
+function drawBird() {
+  ctx.fillStyle = "yellow";
+  ctx.beginPath();
+  ctx.arc(bird.x, bird.y, bird.size, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawPipes() {
+  ctx.fillStyle = "green";
+  pipes.forEach(pipe => {
+    ctx.fillRect(pipe.x, 0, 50, pipe.top);
+    ctx.fillRect(pipe.x, pipe.bottom, 50, canvas.height);
+  });
+}
+
+function updatePipes() {
+  if (frame % 90 === 0) {
+    let top = Math.random() * (canvas.height / 2);
+    let gap = 150;
+    pipes.push({
+      x: canvas.width,
+      top: top,
+      bottom: top + gap
+    });
+  }
+
+  pipes.forEach(pipe => {
+    pipe.x -= 3;
+
+    // collision
+    if (
+      bird.x + bird.size > pipe.x &&
+      bird.x - bird.size < pipe.x + 50 &&
+      (bird.y - bird.size < pipe.top ||
+       bird.y + bird.size > pipe.bottom)
+    ) {
+      alert("Game Over! Score: " + score);
+      document.location.reload();
+    }
+
+    if (pipe.x === bird.x) {
+      score++;
+    }
+  });
+}
+
+function updateBird() {
+  bird.velocity += bird.gravity;
+  bird.y += bird.velocity;
+
+  if (bird.y > canvas.height || bird.y < 0) {
+    alert("Game Over! Score: " + score);
+    document.location.reload();
+  }
+}
+
+function drawScore() {
+  ctx.fillStyle = "black";
+  ctx.font = "30px Arial";
+  ctx.fillText("Score: " + score, 20, 50);
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawBird();
+  drawPipes();
+  drawScore();
+
+  updateBird();
+  updatePipes();
+
+  frame++;
+  requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener("keydown", () => {
+  bird.velocity = bird.lift;
+});
+
+gameLoop();
+</script>
+
 </body>
 </html>
